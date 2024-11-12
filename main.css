@@ -1,0 +1,55 @@
+fieldset {
+    border: 0;
+    position: relative;
+}
+
+section form {
+    display: none;
+}
+
+section form > * {
+    margin-left: 2px;
+    padding-left: 0.75em;
+}
+
+fieldset:first-of-type label {
+    display: block;
+    margin-bottom: 3px;
+}
+
+fieldset:not(:first-of-type) > * {
+    display: inline-block;
+}
+
+select {
+    display: inline-block;
+    max-width: 200px;
+    font-size: 14px;
+}
+
+#css-form label {
+    width: 80%;
+    max-width: 480px;
+    margin: 20px auto;
+    height: 200px;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px dashed #009578;
+    border-radius: 10px;
+    font-size: 20px;
+}
+
+.drop-over {
+    border-style: solid;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+}

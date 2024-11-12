@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <title>Font Awesome Subset</title>
+        <link href="/main.css" rel="stylesheet">
+        <link rel="preload" as="fetch" crossorigin href="fonts.zip">
+        <script src="https://cdn.jsdelivr.net/pyodide/v0.26.3/full/pyodide.js" defer></script>
+        <script src="/main.js" defer></script>
+    </head>
+    <body>
+        <main>
+            <form id="css-form">
+                <input type="file" id="css-file" accept=".css" class="visually-hidden">
+                <label for="css-file">Select your css file</label>
+            </form>
+            <section>
+                <form>
+                    <fieldset>
+                        <label>You can deselect icons you don't want.</label>
+                        <select id="icon-names" multiple></select>
+                    </fieldset>
+                    <fieldset>
+                        <p>Font Weight: </p>
+                        <div>
+                            <input type="radio" id="regular-radio" name="font-weight" value="regular" checked>
+                            <label for="regular-radio">Regular</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="solid-radio" name="font-weight" value="solid">
+                            <label for="solid-radio">Solid</label>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <p>Format: </p>
+                        <div>
+                            <input type="radio" id="woff-radio" name="font-format" value="woff" checked>
+                            <label for="woff-radio">Woff2</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ttf-radio" name="font-format" value="ttf">
+                            <label for="ttf-radio">Truetype</label>
+                        </div>
+                    </fieldset>
+                    <div>
+                        <button id="extract-fonts">Get Font</button>
+                    </div>
+                </form>
+            </section>
+            <section id="result-link"></section>
+        </main>
+        <script>
+            document.addEventListener("DOMContentLoaded", (e) => {init();}, false);
+        </script>
+    </body>
+</html>
