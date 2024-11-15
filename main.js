@@ -7,13 +7,14 @@ class App {
     init() {
         this.addEventListeners();
         this.installfonttools();
+        this.buttonContainer = document.querySelector('#icon-form > div');
     }
 
 
     async installfonttools() {
         if ( window.Worker) {
             this.myWorker = new Worker("worker.js");
-            let createDownloadLink = this.createDownloadLink;
+            let createDownloadLink = this.createDownloadLink.bind(this);
             this.myWorker.onmessage = function(e) {
                 let {fontBuffer, isRegular, isWoff} = e.data;
                 createDownloadLink(fontBuffer, isRegular, isWoff);
@@ -57,6 +58,7 @@ class App {
 
         document.getElementById("extract-fonts").addEventListener("click", (e) => {
             e.preventDefault();
+            this.buttonContainer.classList.add("hide-button");
             document.getElementById("result-link").innerHTML = "";
             let selected = [];
             for ( let option of selectElement.options ) {
@@ -157,6 +159,7 @@ class App {
             filename = `fa-solid-subset-900.${ext}`;
         }
         document.getElementById("result-link").innerHTML = `<a href=${url} download=${filename}>Download Subset</a>`;
+        this.buttonContainer.classList.remove("hide-button");
     }
 }
 

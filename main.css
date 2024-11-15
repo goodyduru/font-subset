@@ -3,15 +3,6 @@ fieldset {
     position: relative;
 }
 
-section form {
-    display: none;
-}
-
-section form > * {
-    margin-left: 2px;
-    padding-left: 0.75em;
-}
-
 fieldset:first-of-type label {
     display: block;
     margin-bottom: 3px;
@@ -52,4 +43,35 @@ select {
     width: 1px;
     overflow: hidden;
     clip: rect(1px, 1px, 1px, 1px);
+}
+
+#icon-form {
+    display: none;
+}
+
+#icon-form > * {
+    margin-left: 2px;
+    padding-left: 0.75em;
+}
+
+#icon-form div p {
+    display: none;
+    text-align: center;
+    box-sizing: border-box;
+    background-color: #efefef;
+    margin: 0em;
+    padding-block: 1px;
+    padding-inline: 6px;
+    border-width: 1px;
+    border-style: outset;
+    border-color: #000;
+    font-size: 14px;
+}
+
+#icon-form div.hide-button p {
+    display: inline-block;
+}
+
+.hide-button button {
+    display: none;
 }
