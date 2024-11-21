@@ -109,7 +109,7 @@ class App {
             }
             let html = `<div class="tag"><i class="fa fa-${icon.name}"></i><span>${icon.name}</span></div>`;
             let node = this.htmlToNode(html);
-            let button = this.htmlToNode(`<button class="action"></button>`);
+            let button = this.htmlToNode(`<button class="action" aria-label="${icon.name}"></button>`);
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.clickHandler(icon, node);

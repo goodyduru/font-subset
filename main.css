@@ -1,5 +1,73 @@
+input[type=radio] {
+    z-Index: 1;
+    box-sizing: border-box;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    margin: 0;
+}
+
+input[type=radio] + label {
+    z-Index: 2;
+    box-sizing: border-box;
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0 0 0 32px;
+    font-weight: 400;
+    cursor: pointer;
+    display: inline-block;
+    word-break: normal;
+}
+
+input[type=radio] + label::before {
+    z-Index: 10000;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #666;
+    border-radius: 100%;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: center center;
+    content: "";
+}
+
+input[type=radio]:checked + label::after {
+    z-Index: 10001;
+    box-sizing: border-box;
+    position: absolute;
+    top: 4px;
+    left: 1px;
+    width: 22px;
+    height: 22px;
+    border: 6px solid #333;
+    border-radius: 100%;
+    content: "";
+}
+
 fieldset {
     border: 0px;
+    font-size: 18px;
+    line-height: 28px;
+}
+
+fieldset div {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    min-height: 28px;
+    margin: 10px 0 0;
+    vertical-align: middle;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    flex-direction: column;
 }
 
 section:first-of-type {
