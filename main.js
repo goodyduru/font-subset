@@ -1,15 +1,18 @@
 class App {
     constructor() {
-        this.fontAwesomeObjs = null;
         this.myWorker = null;
     }
 
     init() {
+        this.allIconContainer = document.getElementById("all-icons");
+        this.selectedIconContainer = document.getElementById("selected-icons");
+        this.searchBox = document.getElementById("search-icons");
+        this.extractBtn = document.getElementById("extract-fonts");
+        this.blobUrl = null;
         this.addEventListeners();
         this.installfonttools();
-        this.buttonContainer = document.querySelector('#icon-form > div');
+        this.renderAll();
     }
-
 
     async installfonttools() {
         if ( window.Worker) {
@@ -23,49 +26,48 @@ class App {
     }
 
     addEventListeners() {
-        const inputElement = document.getElementById("css-file");
         const selectElement = document.getElementById("icon-names");
         const solidElement = document.getElementById("solid-radio");
-        const ttfElement = document.getElementById("ttf-radio")
-        const dropZoneElement = inputElement.parentElement;
-        inputElement.addEventListener("change", (e) => {
-            if (inputElement.files.length == 0) {
-                console.log("Nothing");
+        const regularElement = document.getElementById("regular-radio");
+        const ttfElement = document.getElementById("ttf-radio");
+
+        [solidElement, regularElement].forEach((el) => {el.addEventListener("change", (e) => {
+            let text = "Regular Icons";
+            let isRegular = true;
+            if ( solidElement.checked ) {
+                text = "Solid Icons";
+                isRegular = false;
+            }
+            this.searchBox.setAttribute("placeholder", `Search ${text}`);
+            document.querySelector("section:nth-of-type(2) h2").innerHTML = `All ${text}`;
+            this.selectedIconContainer.innerHTML = "<p>Your selected icons will appear here</p>";
+            this.renderAll(isRegular);
+        })});
+
+        this.searchBox.addEventListener("input", (e) => {
+            const text = e.target.value.trim();
+            this.allIconContainer.replaceChildren();
+            if ( text.length == 0 ) {
+                this.renderChildren();
                 return;
             }
-            this.printUrlAndContent(inputElement.files[0]);
-        });
+            this.renderChildren(text);
+        })
 
-        dropZoneElement.addEventListener("dragover", (e) => {
+        this.extractBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            dropZoneElement.classList.add("drop-over");
-        });
-
-        ["dragleave", "dragend"].forEach((event) => {
-            dropZoneElement.addEventListener(event, (e) => {
-                dropZoneElement.classList.remove("drop-over");
-            });
-        });
-
-        dropZoneElement.addEventListener("drop", (e) => {
-            e.preventDefault();
-            if ( e.dataTransfer.files.length) {
-                inputElement.files = e.dataTransfer.files;
-                this.printUrlAndContent(e.dataTransfer.files[0]);
-            }
-            dropZoneElement.classList.remove("drop-over");
-        });
-
-        document.getElementById("extract-fonts").addEventListener("click", (e) => {
-            e.preventDefault();
-            this.buttonContainer.classList.add("hide-button");
-            document.getElementById("result-link").innerHTML = "";
-            let selected = [];
-            for ( let option of selectElement.options ) {
-                if ( option.selected ) {
-                    selected.push(parseInt(option.value));
+            let unicodes = [];
+            for ( let icon of this.allIcons ) {
+                if ( icon.added == true ) {
+                    unicodes.push(icon.code);
                 }
             }
+            if ( unicodes.length == 0 ) {
+                return;
+            }
+            document.getElementById("result-link").innerHTML = "";
+            this.extractBtn.setAttribute('disabled', 'disabled');
+            this.extractBtn.textContent = "Extracting";
             let isRegular = true;
             if ( solidElement.checked ) {
                 isRegular = false;
@@ -74,75 +76,67 @@ class App {
             if ( ttfElement.checked ) {
                 isWoff = false;
             }
-            this.extractFont(selected, isRegular, isWoff);
-        })
-    }
-
-    async printUrlAndContent(file) {
-        if ( file.type != "text/css" ) {
-            return;
-        }
-        const fileContent = await file.text();
-        const sheet = this.getStyleSheet(fileContent);
-        this.setFontAwesomeObjs(sheet.cssRules);
-        if ( this.fontAwesomeObjs.length == 0 ) {
-            return;
-        }
-        const formElem = document.querySelector("section form");
-        const selectElem = document.getElementById("icon-names");
-        const options = this.fontAwesomeObjs.map((icon, index) => {
-            return `<option value="${index}" selected>${icon.name}</option>`;
+            unicodes.sort();
+            unicodes = unicodes.join(",");
+            this.myWorker.postMessage({unicodes, isRegular, isWoff});
         });
-        selectElem.innerHTML = options.join("");
-        formElem.style.display = "block";
     }
 
-    getStyleSheet(text) {
-        const iframe = document.createElement("iframe");
-        document.head.appendChild(iframe);
-        const style = iframe.contentDocument.createElement("style");
-        style.textContent = text;
-        iframe.contentDocument.head.appendChild(style);
-        const styleSheet = iframe.contentDocument.styleSheets[0];
-        iframe.remove();
-        return styleSheet;
+    htmlToNode(html) {
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        return template.content.firstChild;
     }
 
-    setFontAwesomeObjs(cssRules) {
-        let result = [];
-        for ( let rule of cssRules ) {
-            if ( rule.selectorText == null || rule.selectorText == undefined ) {
-                continue;
-            }
-            if ( rule.style.content == "" ) {
-                continue;
-            }
-            let selectors = rule.selectorText.split(",");
-            for ( let selector of selectors ) {
-                selector = selector.trim();
-                if ( selector.startsWith(".fa-") && selector.endsWith("::before") ) {
-                    let icon = selector.substring(4, selector.length - 8);
-                    result.push({'name': icon, 'code': rule.style.content});
-                    break;
-                }
-            }
+    renderAll(isRegular) {
+        if ( isRegular == undefined || isRegular == null || isRegular ) {
+            this.allIcons = [...REGULAR];
+            this.allIconContainer.classList.remove('solid');
+            this.selectedIconContainer.classList.remove('solid');
+        } else {
+            this.allIcons = [...SOLID];
+            this.allIconContainer.classList.add('solid');
+            this.selectedIconContainer.classList.add('solid')
         }
-        this.fontAwesomeObjs = result;
+        this.allIconContainer.replaceChildren();
+        this.renderChildren();
     }
 
-    extractFont(indexes, isRegular, isWoff) {
-        let unicodes = [];
-        for ( let index of indexes ) {
-            let code = this.fontAwesomeObjs[index].code
-            if ( code.length != 3 ) {
+    renderChildren(searchText) {
+        for ( let icon of this.allIcons ) {
+            if ( icon.added == true || (searchText != undefined && !icon.name.startsWith(searchText)) ) {
                 continue;
             }
-            let c = code.codePointAt(1)
-            unicodes.push(c);
+            let html = `<div class="tag"><i class="fa fa-${icon.name}"></i><span>${icon.name}</span></div>`;
+            let node = this.htmlToNode(html);
+            let button = this.htmlToNode(`<button class="action"></button>`);
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.clickHandler(icon, node);
+            });
+            node.append(button);
+            this.allIconContainer.append(node);
         }
-        unicodes.sort((a, b) => a - b);
-        unicodes = unicodes.map((c) => c.toString(16)).join(",");
-        this.myWorker.postMessage({unicodes, isRegular, isWoff});
+    }
+
+    clickHandler(icon, node) {
+        node.remove();
+        if ( icon.added == true ) {
+            icon.added = false;
+            let text = this.searchBox.value.trim();
+            if ( icon.name.startsWith(text) ) {
+                this.allIconContainer.append(node);
+            }
+            if ( this.selectedIconContainer.childNodes.length == 0 ) {
+                this.selectedIconContainer.innerHTML = "<p>Your selected icons will appear here</p>";
+            }
+        } else {
+            icon.added = true;
+            if ( this.selectedIconContainer.firstChild.tagName == "P" ) {
+                this.selectedIconContainer.replaceChildren();
+            }
+            this.selectedIconContainer.append(node);
+        }
     }
 
     createDownloadLink(font, isRegular, isWoff) {
@@ -152,6 +146,9 @@ class App {
             font_type = "font/ttf";
             ext = "ttf";
         }
+        if ( this.blobUrl != null ) {
+            window.URL.revokeObjectURL(this.blobUrl);
+        }
         let blob = new Blob([font], {type: font_type});
         let url = window.URL.createObjectURL(blob);
         let filename = `fa-regular-subset-400.${ext}`;
@@ -159,7 +156,9 @@ class App {
             filename = `fa-solid-subset-900.${ext}`;
         }
         document.getElementById("result-link").innerHTML = `<a href=${url} download=${filename}>Download Subset</a>`;
-        this.buttonContainer.classList.remove("hide-button");
+        this.extractBtn.removeAttribute('disabled');
+        this.extractBtn.textContent = "Extract Icons As Fonts";
+        this.blobUrl = url;
     }
 }
 

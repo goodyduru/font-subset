@@ -6,21 +6,20 @@
         <meta name="description" content="Icon font subset tool">
 
         <title>Font Awesome Subset</title>
+        <link rel="preload" as="font" crossorigin href="/webfonts/fa-solid-900.woff2">
+        <link rel="preload" as="font" crossorigin href="/webfonts/fa-solid-900.ttf">
+        <link rel="preload" as="font" crossorigin href="/webfonts/fa-regular-400.woff2">
+        <link rel="preload" as="font" crossorigin href="/webfonts/fa-regular-400.ttf">
         <link href="/main.css" rel="stylesheet">
+        <link href="/all.min.css" rel="stylesheet">
+        <script src="/icons.js" defer></script>
         <script src="/main.js" defer></script>
     </head>
     <body>
         <main>
-            <form id="css-form">
-                <input type="file" id="css-file" accept=".css" class="visually-hidden">
-                <label for="css-file">Select your css file</label>
-            </form>
-            <section>
-                <form id="icon-form">
-                    <fieldset>
-                        <label>You can deselect icons you don't want.</label>
-                        <select id="icon-names" multiple></select>
-                    </fieldset>
+            <p>Welcome to Font Awesome Subset! This tool allows you to generate a Truetype or Woff2 icon font file containing only the icons you use.</p>
+            <form>
+                <section>
                     <fieldset>
                         <p>Font Weight: </p>
                         <div>
@@ -43,13 +42,24 @@
                             <label for="ttf-radio">Truetype</label>
                         </div>
                     </fieldset>
+                </section>
+                <section>
+                    <h2>All Regular Icons</h2>
+                    <p>Select the icons you will use.</p>
                     <div>
-                        <button id="extract-fonts">Get Font</button>
-                        <p> Extracting font... </p>
+                        <input id="search-icons" name="search-icons" type="search" placeholder="Search Regular Icons">
                     </div>
-                </form>
-            </section>
-            <section id="result-link"></section>
+                    <div class="icon-container" id="all-icons"></div>
+                </section>
+                <section>
+                    <div class="icon-container" id="selected-icons"><p>Your selected icons will appear here</p></div>
+                </section>
+                <section>
+                    <button id="extract-fonts">Extract Icons As Fonts</button>
+                    <p id="result-link"></p>
+                </section>
+                
+            </form>
         </main>
     </body>
 </html>
