@@ -9,6 +9,8 @@ class App {
         this.searchBox = document.getElementById("search-icons");
         this.extractBtn = document.getElementById("extract-fonts");
         this.blobUrl = null;
+        this.numElements = 10 * Math.round(this.allIconContainer.clientWidth/140);
+        this.justLoaded = true;
         this.addEventListeners();
         this.installfonttools();
         this.renderAll();
@@ -26,7 +28,6 @@ class App {
     }
 
     addEventListeners() {
-        const selectElement = document.getElementById("icon-names");
         const solidElement = document.getElementById("solid-radio");
         const regularElement = document.getElementById("regular-radio");
         const ttfElement = document.getElementById("ttf-radio");
@@ -45,14 +46,23 @@ class App {
         })});
 
         this.searchBox.addEventListener("input", (e) => {
+            this.justLoaded = false;
             const text = e.target.value.trim();
             this.allIconContainer.replaceChildren();
             if ( text.length == 0 ) {
-                this.renderChildren();
+                this.renderChildren(null);
                 return;
             }
             this.renderChildren(text);
-        })
+        });
+
+        this.allIconContainer.addEventListener("scroll", () => {
+            if ( !this.justLoaded ) {
+                return;
+            }
+            this.justLoaded = false;
+            this.renderChildren(null, true);
+        });
 
         this.extractBtn.addEventListener("click", (e) => {
             e.preventDefault();
@@ -99,24 +109,32 @@ class App {
             this.selectedIconContainer.classList.add('solid')
         }
         this.allIconContainer.replaceChildren();
-        this.renderChildren();
+        this.renderChildren(null);
     }
 
-    renderChildren(searchText) {
-        for ( let icon of this.allIcons ) {
-            if ( icon.added == true || (searchText != undefined && !icon.name.startsWith(searchText)) ) {
+    renderChildren(searchText, loadOthers) {
+        let fragment = document.createDocumentFragment();
+        let length = ( this.justLoaded ) ? this.numElements : this.allIcons.length;
+        let start = ( loadOthers == true ) ? this.numElements : 0;
+        for ( let i = start; i < length; i++ ) {
+            let icon = this.allIcons[i];
+            if ( icon.added == true || (searchText != null && !icon.name.startsWith(searchText)) ) {
                 continue;
             }
-            let html = `<div class="tag"><i class="fa fa-${icon.name}"></i><span>${icon.name}</span></div>`;
-            let node = this.htmlToNode(html);
-            let button = this.htmlToNode(`<button class="action" aria-label="${icon.name}"></button>`);
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.clickHandler(icon, node);
-            });
-            node.append(button);
-            this.allIconContainer.append(node);
+            if ( !icon.hasOwnProperty('node') ) {
+                let html = `<div class="tag"><i class="fa fa-${icon.name}"></i><span>${icon.name}</span></div>`;
+                let node = this.htmlToNode(html);
+                let button = this.htmlToNode(`<button class="action" aria-label="${icon.name}"></button>`);
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.clickHandler(icon, node);
+                });
+                node.append(button);
+                icon.node = node;
+            }
+            fragment.append(icon.node);
         }
+        this.allIconContainer.append(fragment);
     }
 
     clickHandler(icon, node) {
